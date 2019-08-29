@@ -67,7 +67,7 @@ def get_stats(hostname, port, https):
     else: 
         host = "http://%s:%d" % (hostname, port)
 
-    url = "%s%s" % (host, "/admin/api.php?summaryRaw")
+    url = "%s%s" % (host, "/admin/api.php?summaryRaw&topItems&getQuerySources&topClientsBlocked&overTimeData10mins")
 
     try:
         start = time.time()
@@ -80,6 +80,7 @@ def get_stats(hostname, port, https):
         exit(CRITICAL)
 
     parsed_data = json.loads(data)
+    # import pprint; pprint.pprint(parsed_data)
 
     add_perfdata("response_time", end - start)
 
@@ -99,6 +100,28 @@ def get_stats(hostname, port, https):
     add_perfdata("status",                  parsed_data["status"])
     add_perfdata("unique_clients",          parsed_data["unique_clients"])
     add_perfdata("unique_domains",          parsed_data["unique_domains"])
+    add_perfdata("status",                  parsed_data["status"])
+
+    ads_over_time_keys = parsed_data["ads_over_time"].keys()
+    ads_over_time_keys.sort()
+    add_perfdata("ads_over_time",           parsed_data["ads_over_time"][ads_over_time_keys[-1]])
+
+    domains_over_time_keys = parsed_data["domains_over_time"].keys()
+    domains_over_time_keys.sort()
+    add_perfdata("domains_over_time",           parsed_data["domains_over_time"][domains_over_time_keys[-1]])
+
+
+    for i in parsed_data["top_ads"]:
+        add_perfdata("top_ads_%s" % i, parsed_data["top_ads"][i])
+
+    for i in parsed_data["top_queries"]:
+        add_perfdata("top_queries_%s" % i, parsed_data["top_queries"][i])
+
+    for i in parsed_data["top_sources"]:
+        add_perfdata("top_sources_ok_%s" % i.split("|")[0], parsed_data["top_sources"][i])
+
+    for i in parsed_data["top_sources_blocked"]:
+        add_perfdata("top_sources_blocked_%s" % i.split("|")[0], parsed_data["top_sources_blocked"][i])
 
 
     output = "PiHole stats collected"
