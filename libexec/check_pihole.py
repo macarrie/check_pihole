@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import urllib2
+import ssl
 
 VERSION = "0.1"
  
@@ -71,7 +72,7 @@ def get_stats(hostname, port, https):
 
     try:
         start = time.time()
-        req = urllib2.urlopen(url)
+        req = urllib2.urlopen(url, context=ssl._create_unverified_context())
         end = time.time()
 
         data = req.read()
